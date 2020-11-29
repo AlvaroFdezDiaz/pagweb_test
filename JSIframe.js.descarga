@@ -1,0 +1,230 @@
+﻿function getQueryVariable(variable) {
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split("=");
+        if (pair[0] == variable) {
+            return pair[1];
+        }
+    }
+    return "";
+};
+function breakPoint(element) {
+    var bps = [320, 390, 480, 560, 768, 1024, 99999],
+        w = element.clientWidth,
+        min
+
+    for (var i = 0, l = bps.length; i < l; i++) {
+        if (w <= bps[0]) {
+            return bps[0];
+        }
+
+        if ((i > 0) & (bps[i - 1] <= w) & (w <= bps[i])) {
+            min = bps[i - 1] || 0;
+            break
+        }
+    }
+
+    return min;
+}
+
+function resizeSearcher(idIb2c) {
+    var Ib2cs = ["inmofactory_Ib2c_BuscadorCompacto", "inmofactory_Ib2c_Buscador", "inmofactory_Ib2c_Destacados"];
+    if (!!idIb2c & (typeof idIb2c === 'string')) {
+        Ib2cs = [idIb2c];
+    }
+    Ib2cs.map(function (item) {
+        if (!!document.getElementById('_' + item)) {
+            resizeSearcherById(item);
+        }
+    });
+}
+
+function resizeSearcherById(idIb2c) {
+    var containerIframe = document.getElementById(idIb2c).getAttribute("data-media");
+    var newWidthContainerIframe = breakPoint(document.getElementById(idIb2c));
+    document.getElementById(idIb2c).setAttribute("data-media", breakPoint(document.getElementById(idIb2c)));
+    if (!!document.getElementById('_' + idIb2c)) {
+        document.getElementById('_' + idIb2c).height = "100%";
+        document.getElementById('_' + idIb2c).contentWindow.postMessage({ 'dataMedia': newWidthContainerIframe, 'sendPostMessageHeighIframe': true }, '*');
+    }
+
+};
+
+function scrollToItem(item) {
+    var diff = (item.offsetTop - window.scrollY) / 8;
+    if (Math.abs(diff) <= 1) {
+        return window.scrollTo(0, item.offsetTop);
+    }
+    window.scrollTo(0, (window.scrollY + diff));
+    clearTimeout(window._TO);
+    window._TO = setTimeout(scrollToItem, 30, item);
+}
+
+function receiveMessage(event) {
+    var idIb2c = event.data.idIb2c;
+    var heightFrame = event.data.heightFrame;
+    var newWidthContainerIframe = breakPoint(document.getElementById(idIb2c));
+    document.getElementById('_' + idIb2c).height = heightFrame;
+    document.getElementById('_' + idIb2c).contentWindow.postMessage({ 'dataMedia': newWidthContainerIframe, 'sendPostMessageHeighIframe': false }, '*')
+
+    if (event.data.scrollToI2bc) {
+        if (!!window.$) {
+            $('html, body').animate({
+                scrollTop: $("#inmofactory_Ib2c_Buscador").offset().top
+            }, 600);
+        } else {
+            setTimeout(scrollToItem(document.getElementById('inmofactory_Ib2c_Buscador')), 600);
+        }
+    }
+};
+ib2cEscritorio = null;
+Ib2c = function (ib2cComponente, ib2cUrl, PI, GridUrl, Modality, ShowGrid, OnlyBankAwarded, ShowHighlighted, language, protocolo) {    
+    ValidateIsCookieActive();
+    this.initialize(ib2cComponente, ib2cUrl, PI, GridUrl, Modality, ShowGrid, OnlyBankAwarded, ShowHighlighted, language, protocolo);
+};
+Ib2c.prototype = {
+    _inmofactory_Ib2c_Componente: "",
+    _inmofactory_Ib2c_Url: "",
+    _inmofactory_Ib2c_Pi: "",
+    _inmofactory_Ib2c_LanguageId: "",
+    _inmofactory_Ib2c_DetailId: "",
+    _inmofactory_Ib2c_GridUrl: "",
+    _inmofactory_Ib2c_Modality: "",
+    _inmofactory_Ib2c_ShowGrid: "",
+    _inmofactory_Ib2c_OnlyBankAwarded: "",
+    _inmofactory_Ib2c_ShowHighlighted: "",
+    _inmofactory_Ib2c_Protocol: "",
+    _componente: {
+        BuscadorCompacto: {
+            containerId: "inmofactory_Ib2c_BuscadorCompacto",
+            iframeOrObjectId: "_inmofactory_Ib2c_BuscadorCompacto",
+            src: "/property/CompactSearch?pi=__pi__&li=__li__&gu=__gu__&fi=__fi__&mod=__mod__&pro=__pro__"
+        },
+        Destacados: {
+            containerId: "inmofactory_Ib2c_Destacados",
+            iframeOrObjectId: "_inmofactory_Ib2c_Destacados",
+            src: "/property/featured?pi=__pi__&li=__li__&gu=__gu__&fi=__fi__&mod=__mod__&pro=__pro__"
+        },
+        Buscador: {
+            containerId: "inmofactory_Ib2c_Buscador",
+            iframeOrObjectId: "_inmofactory_Ib2c_Buscador",
+            src: "/property/list?pi=__pi__&li=__li__&gu=__gu__&fi=__fi__&mod=__mod__&sg=__sg__&ba=__ba__&sh=__sh__&pro=__pro__"
+        }
+    },
+    initialize: function (ib2cComponente, ib2cUrl, PI, GridUrl, Modality, ShowGrid, OnlyBankAwarded, ShowHighlighted, language, protocolo) {
+        this._inmofactory_Ib2c_Componente = ib2cComponente;
+        this._inmofactory_Ib2c_Url = ib2cUrl;
+        this._inmofactory_Ib2c_PI = PI;
+        this._inmofactory_Ib2c_LanguageId = getQueryVariable("lang");
+        if (this._inmofactory_Ib2c_LanguageId == "") { this._inmofactory_Ib2c_LanguageId = language; }
+        this._inmofactory_Ib2c_DetailId = getQueryVariable("detailid");
+        this._inmofactory_Ib2c_GridUrl = GridUrl;
+        this._inmofactory_Ib2c_Modality = getQueryVariable("mod");
+        if (this._inmofactory_Ib2c_Modality == "")
+        { this._inmofactory_Ib2c_Modality = Modality; }
+        this._inmofactory_Ib2c_ShowGrid = getQueryVariable("grid");
+        if (this._inmofactory_Ib2c_ShowGrid == "")
+        { this._inmofactory_Ib2c_ShowGrid = ShowGrid; }
+        this._inmofactory_Ib2c_OnlyBankAwarded = getQueryVariable("bank");
+        if (this._inmofactory_Ib2c_OnlyBankAwarded == "") { this._inmofactory_Ib2c_OnlyBankAwarded = OnlyBankAwarded; }
+        this._inmofactory_Ib2c_ShowHighlighted = getQueryVariable("high");
+        if (this._inmofactory_Ib2c_ShowHighlighted == "") { this._inmofactory_Ib2c_ShowHighlighted = ShowHighlighted; }
+        this._inmofactory_Ib2c_Protocol = getQueryVariable("pro");
+        if (this._inmofactory_Ib2c_Protocol == "") { protocolo ? this._inmofactory_Ib2c_Protocol = protocolo : this._inmofactory_Ib2c_Protocol = "http"; }
+        this.writePersistableVar("var inmofactory_Ib2c_Url", ib2cUrl);
+        this.createComponent();
+        ValidateIsCookieActive();
+    },
+    createComponent: function () {
+        var replacedUrl;
+        var obj;
+
+        if (this._inmofactory_Ib2c_Protocol == "http") {
+            replacedUrl = this._inmofactory_Ib2c_Url + this._componente[this._inmofactory_Ib2c_Componente].src.replace("__pi__", this._inmofactory_Ib2c_PI).replace("__li__", this._inmofactory_Ib2c_LanguageId).replace("__gu__", this._inmofactory_Ib2c_GridUrl).replace("__fi__", this._inmofactory_Ib2c_DetailId).replace("__mod__", this._inmofactory_Ib2c_Modality).replace("__sg__", this._inmofactory_Ib2c_ShowGrid).replace("__ba__", this._inmofactory_Ib2c_OnlyBankAwarded).replace("__sh__", this._inmofactory_Ib2c_ShowHighlighted).replace("__pro__", this._inmofactory_Ib2c_Protocol) + "&hRoot=" + window.location.host;
+            obj = this.createIFrame(this._componente[this._inmofactory_Ib2c_Componente].iframeOrObjectId, replacedUrl);
+        }
+        else {
+            replacedUrl = this._inmofactory_Ib2c_Url + this._componente[this._inmofactory_Ib2c_Componente].src.replace("__pi__", this._inmofactory_Ib2c_PI).replace("__li__", this._inmofactory_Ib2c_LanguageId).replace("__gu__", this._inmofactory_Ib2c_GridUrl).replace("__fi__", this._inmofactory_Ib2c_DetailId).replace("__mod__", this._inmofactory_Ib2c_Modality).replace("__sg__", this._inmofactory_Ib2c_ShowGrid).replace("__ba__", this._inmofactory_Ib2c_OnlyBankAwarded).replace("__sh__", this._inmofactory_Ib2c_ShowHighlighted).replace("__pro__", this._inmofactory_Ib2c_Protocol) + "&hRoot=" + window.location.host;
+            obj = this.createObjectEmbed(this._componente[this._inmofactory_Ib2c_Componente].iframeOrObjectId, replacedUrl);
+        }
+
+        this.writeIFrame(this.writeContainer(this._componente[this._inmofactory_Ib2c_Componente].containerId), obj);
+    },
+    createIFrame: function (id, src) {
+        var ib2cIframe = document.createElement("iframe");
+        ib2cIframe.id = id;
+        ib2cIframe.name = id;
+        ib2cIframe.setAttribute("src", src);
+        ib2cIframe.style.padding = "0";
+        ib2cIframe.style.margin = "0";
+        ib2cIframe.style.border = "0";
+        ib2cIframe.style.overflow = "hidden";
+        ib2cIframe.scrolling = "no";
+        ib2cIframe.frameBorder = "0";
+        ib2cIframe.frameSpacing = "0";
+        ib2cIframe.marginHeight = "0";
+        ib2cIframe.marginWidth = "0";
+        ib2cIframe.width = "100%";
+        switch (id) {
+            case "_inmofactory_Ib2c_BuscadorCompacto": ib2cIframe.height = 260; ib2cIframe.style.width = "100%"; ib2cIframe.style.maxWidth = "560px"; ib2cIframe.width = ""; break;
+            case "_inmofactory_Ib2c_Destacados": ib2cIframe.height = "100%"; break;
+            case "_inmofactory_Ib2c_Buscador": ib2cIframe.height = 560; break;
+            default: ib2cIframe.height = 1; ib2cIframe.height = 1;
+        }
+        return ib2cIframe;
+    },
+    createObjectEmbed: function (id, src) {
+        var ib2cObject = document.createElement("object");
+        ib2cObject.id = id; ib2cObject.name = id;
+        ib2cObject.setAttribute("data", src);
+        ib2cObject.width = "100%"; ib2cObject.height = "100%";
+        switch (id) {
+            case "_inmofactory_Ib2c_BuscadorCompacto": ib2cObject.height = 260; ib2cObject.style.width = "100%"; ib2cObject.style.maxWidth = "560px"; ib2cObject.width = ""; break;
+            case "_inmofactory_Ib2c_Destacados": ib2cObject.height = "100%"; break;
+            case "_inmofactory_Ib2c_Buscador": ib2cObject.height = 560; break;
+            default: ib2cObject.height = 1; ib2cObject.height = 1;
+        }
+
+        var ib2cEmbed = document.createElement("embed");
+        ib2cEmbed.id = id; ib2cEmbed.name = id + "Embed";
+        ib2cEmbed.setAttribute("src", src);
+        ib2cEmbed.width = "100%"; ib2cEmbed.height = "100%";
+        switch (id) {
+            case "_inmofactory_Ib2c_BuscadorCompacto": ib2cEmbed.height = 260; ib2cEmbed.style.width = "100%"; ib2cEmbed.style.maxWidth = "560px"; ib2cEmbed.width = ""; break;
+            case "_inmofactory_Ib2c_Destacados": ib2cEmbed.height = "100%"; break;
+            case "_inmofactory_Ib2c_Buscador": ib2cEmbed.height = 560; break;
+            default: ib2cEmbed.height = 1; ib2cEmbed.height = 1;
+        }
+        ib2cObject.appendChild(ib2cEmbed);
+        return ib2cObject;
+    },
+    writeContainer: function (id) {
+        document.writeln('<div id="' + id + '" style="padding:0px; margin:0px; border:none;"><\/div>');
+        return id;
+    },
+    writeIFrame: function (containerId, iFrameOrObject) {        
+        document.getElementById(containerId).appendChild(iFrameOrObject);
+        return iFrameOrObject;
+    },
+    writePersistableVar: function (variable, value) {
+        document.writeln('<sc' + 'ript language="javascript" type="text\/javascript">\r\n' + variable + '="' + value + '";\r\n<\/sc' + 'ript>');
+    }
+};
+
+function ValidateIsCookieActive() {    
+    var isActive = true;
+
+    var dt = new Date();
+    dt.setSeconds(dt.getSeconds() + 60);
+    document.cookie = "cookietest=1; expires=" + dt.toGMTString();
+    var cookiesEnabled = document.cookie.indexOf("cookietest=") != -1;
+    if (!cookiesEnabled) {
+        isActive = false;
+        alert("Para poder visualizar correctamente el contenido de la página web, es necesario que active las ´coockies´ de su navegador.");
+    }
+    return isActive;
+}
+
+window.addEventListener("resize", resizeSearcher);
+window.addEventListener("message", receiveMessage, false);
